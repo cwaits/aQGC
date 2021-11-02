@@ -1,4 +1,4 @@
-if [[ `basename $PWD` != "MCProd" ]]; then echo "Execute from MCProd dir"; exit; fi
+if [[ `basename $PWD` != "aQGC" ]]; then echo "Execute from aQGC dir"; exit; fi
 
 baseDir=$PWD
 source setup.sh
