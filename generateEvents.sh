@@ -41,4 +41,5 @@ for gz in $gzs; do
     sed s%examples/Pythia8/events.lhe%$lhe% examples/Pythia8/configLHE.cmnd > configLHE.cmnd #this will create a new config pointing to your lhe
     sed "s%Main:numberOfEvents = 10%Main:numberOfEvents = $n%" --in-place configLHE.cmnd
     ./DelphesPythia8 $delphesCard configLHE.cmnd $output  #this runs delphes using your new config
+    python2.7 analyzeDelphes.py $output #run analysis code over resulting delphes tree
 done
