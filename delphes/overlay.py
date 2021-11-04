@@ -1,5 +1,7 @@
-# run with "python overlay.py <delphes_output_dir>/* <delphes_output_hists_dir>"
-# <delphes_output_dir> is a directory with root files containing the histograms for every sample you want to plot
+# run with "python overlay.py <list_of_delphes_outputs> <delphes_output_hists_dir>"
+# <list_of_delphes_outputs> is a list of the full paths to every sample you want to plot
+# if there are many samples going on the same plot, you alternatively put them all in a directory,<delphes_output_dir>
+# and run with "python overlay.py <delphes_output_dir>/* <delphes_output_hists_dir>"
 # <delphes_output_hists_dir> is the directory where you wish to save all the histograms at
 # if <delphes_output_hists_dir> is in a parent directory to the directory where this script is run
 # then you will need to edit the path variable
@@ -14,7 +16,7 @@ cs = [ 1,1,1]
 lumi = [1,1,1]
 events = [1, 1, 1]
 # edit this to point to your delphes dir
-path = '/raid01/users/cwaits/MCProd/delphes/'+str(argv[-1])
+path = '/raid01/users/cwaits/aQGC/delphes/'+str(argv[-1])
 
 inputs=argv[1:-1]
 
