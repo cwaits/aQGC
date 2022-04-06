@@ -40,6 +40,7 @@ from sys import argv
 from ROOT import *
 TH1.SetDefaultSumw2()
 import math
+from array import array
 
 gSystem.Load("libDelphes")
 gStyle.SetOptStat(0)
@@ -85,6 +86,12 @@ def isBeamRemnant(p):
 def sortFunc(x):
     return (x.PT)*math.cosh(x.Eta)
 #---------------------------------------------------------
+
+# set channel (2 muon, 2 Wjets,...)
+muon_selection=2
+Wjet_selection=2
+zmass_veto=True
+dimuon_mass=106
 
 if __name__=='__main__':
     
@@ -138,8 +145,7 @@ if __name__=='__main__':
             h_reco[p]['pT'][i]=TH1F('R_%s_Pt_%s'%(particle[p],i),';%s pT [GeV];Events'%particle[p], 200, 0, bin_range)
             h_reco[p]['p'][i]=TH1F('R_%s_P_%s'%(particle[p],i),';%s P [GeV];Events'%particle[p], 20, 0, bin_range)
             h_reco[p]['eta'][i]=TH1F('R_%s_eta_%s'%(particle[p],i),';%s  #eta;Events'%particle[p], 20, -4, 4)
-            if (p == 21):
-                h_reco[p]['mass'][i]=TH1F('R_%s_mass_%s'%(particle[p],i),';%s mass [GeV];Events'%particle[p], 20, 0, bin_range/2)
+            h_reco[p]['mass'][i]=TH1F('R_%s_mass_%s'%(particle[p],i),';%s mass [GeV];Events'%particle[p], 20, 0, 200)
     
     R_reco_muon_leading_cos = TH1F('R_muon_leading_cos', ';cos(theta);Events', 10, -1, 1) 
     R_reco_muon_sub_cos = TH1F('R_muon_sub_cos', ';cos(theta);Events', 10, -1, 1) 
@@ -168,20 +174,26 @@ if __name__=='__main__':
     R_missingET = TH1F('R_MissingET', ';Missing Transverse Energy [GeV];Events', 200, 0, bin_range)
     R_missingE = TH1F('R_MissingE', ';Missing Energy [GeV];Events', 200, 0, bin_range)
     R_missingMass = TH1F('R_MissingMass', ';Missing Mass [GeV];Events' , 200, 0, bin_range)
+    R_missingP = TH1F('R_MissingP', ';Missing Momentum [Gev];Events', 20, 0, bin_range)
     
-    #histograms for beam remnants
+    #histograms for Wjets
     R_Wjets_pT = TH1F('R_Wjets_Pt', ';pT [GeV];Events', 20, 0, bin_range)
     R_Wjets_p = TH1F('R_Wjets_p', ';p [GeV];Events', 200, 0, bin_range)
     R_Wjets_eta = TH1F('R_Wjets_eta', ';Eta;Events', 40, -10, 10)
     R_Wjets_multiplicity = TH1F('R_Wjets_multiplicity', ';Multiplicity;Events', 7, -.5, 6.5)
-    R_Wjets_mass = TH1F('R_Wjets_mass', ';mass [GeV];Events', 20, 0, sqrtS)
+    R_Wjets_mass = TH1F('R_Wjets_mass', ';mass [GeV];Events', 20, 50, 100)
+    R_Wjets_mass_pairs = TH1F('R_Wjets_mass_pairs', ';mass [GeV];Events', 20, 0, sqrtS)
     R_Wjets_p_leading = TH1F('R_Wjets_p_leading', ';p [GeV];Events', 20, 0, bin_range)
     R_Wjets_p_sub = TH1F('R_Wjets_p_sub', ';p [GeV];Events', 20, 0, bin_range)
     R_Wjets_cos_leading = TH1F('R_Wjets_cos_leading', ';cos(theta);Events', 10, -1, 1) 
     R_Wjets_cos_sub = TH1F('R_Wjets_cos_sub', ';cos(theta);Events', 10, -1, 1)
     R_WJets_p_pair = TH1F('R_Wjets_p_pairs', ';p [GeV];Events', 20, 0, sqrtS)
-    R_Wjets_cos_pair = TH1F('R_Wjets_cos_pairs', ';cos(theta);Events',10, -1, 1)
-
+    R_Wjets_cos_pair = TH1F('R_Wjets_cos_pairs', ';cos(theta);Events',10, -1, 1)    
+    #histogram for Wjet pairs mass with variable binning
+    a=array('f', [0]+list(range(1000, 3001, 500))+[6000])
+    R_dijet_mass = TH1F('R_dijet_mass','mass [GeV];Events', 6, a)
+    R_dijet_mass_10GeVbinning = TH1F('R_dijet_mass_10GeVbinning', ';mass [GeV];Events', 600, 0, sqrtS)    
+ 
     #histograms for beam remnants
     T_beamRemnants_pT = TH1F('T_beamRemnants_Pt', ';pT [GeV];Events', 20, 0, bin_range)
     T_beamRemnants_p = TH1F('T_beamRemnants_p', ';p [GeV];Events', 200, 0, bin_range)
@@ -212,7 +224,7 @@ if __name__=='__main__':
     R_nonBeamRemnants_multiplicity = TH1F('R_nonBeamRemnants_multiplicity', ';Multiplicity;Events', 7, -.5, 6.5)
     R_nonBeamRemnants_cosh = TH1F('R_nonBeamRemnants_cosh', ';Cosh(Eta)/pT;Events', 20, 0, math.cosh(10)/(10*bin_range))
     
-    CutFlow = TH1F('CutFlow', ';Cut;Events', 5, .5, 5.5)
+    CutFlow = TH1F('CutFlow', ';Cut;Events', 6, .5, 6.5)
 
    #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     m=0 
@@ -258,26 +270,30 @@ if __name__=='__main__':
         if len(muons)>=2:
             muon_4vec=muons[0].P4() + muons[1].P4()
         CutFlow.Fill(1)
-        if (len(muons) == 2) and (abs(muon_4vec.M()-91)<15):
+        if (len(muons) == 2):
             CutFlow.Fill(2)
-            if len(jets) == 2:
+            if muon_4vec.M()>=106:
                 CutFlow.Fill(3)
-                if len(W_jets) >= 1:
+                if len(jets) == 2:
                     CutFlow.Fill(4)
-                    if len(W_jets) == 2:
+                    if len(W_jets) >= 1:
                         CutFlow.Fill(5)
+                        if len(W_jets) == 2:
+                            CutFlow.Fill(6)
 
-        if len(muons) != 2:
+        if len(muons) != muon_selection:
             continue
-        if len(W_jets) != 2: 
+        if len(W_jets) != Wjet_selection: 
             continue
-        # zmass veto channel
-        #if (muon_4vec.M()-91)<15:
-        #    continue
-        # zmass channel
-        if abs(muon_4vec.M()-91)>15:
-            continue
-        R_mumu_mass.Fill(muon_4vec.M())
+        if zmass_veto:
+            if muon_4vec.M() <= dimuon_mass:
+                continue
+        else:
+            if muon_4vec.M() > dimuon_mas:
+                continue 
+        if len(muons) >= 2:
+            R_mumu_mass.Fill(muon_4vec.M())
+
         
         h_truth[11]['mult'].Fill(len(truthElectrons))
         h_truth[13]['mult'].Fill(len(truthMuons))
@@ -382,19 +398,21 @@ if __name__=='__main__':
         if len(muons)>=2:
             R_muon_leading_cos.Fill(muons[0].P4().CosTheta())
             R_muon_sub_cos.Fill(muons[1].P4().CosTheta())
+            R_mumu_p.Fill(muon_4vec.P())
+            R_mumu_cos.Fill(muon_4vec.CosTheta())
         if len(muons)==1:
-            R_muon_leading_cos.Fill(muons[0].P4().CosTheta())
-        R_mumu_p.Fill(muon_4vec.P())
-        R_mumu_cos.Fill(muon_4vec.CosTheta())   
+            R_muon_leading_cos.Fill(muons[0].P4().CosTheta()) 
         for i in range(len(muons)):
             P4_f+=muons[i].P4()
             h_reco[13]['pT']['I'].Fill(muons[i].PT)
             h_reco[13]['p']['I'].Fill(muons[i].P4().P())
-            h_reco[13]['eta']['I'].Fill(muons[i].Eta)            
+            h_reco[13]['eta']['I'].Fill(muons[i].Eta)
+            h_reco[13]['mass']['I'].Fill(muons[i].P4().M())            
             if i<4:
                 h_reco[13]['pT'][i].Fill(muons[i].PT)
                 h_reco[13]['p'][i].Fill(muons[i].P4().P())
                 h_reco[13]['eta'][i].Fill(muons[i].Eta)
+                h_reco[13]['mass'][i].Fill(muons[i].P4().M())
 
         R_beamRemnants_multiplicity.Fill(len(reco_beamRemnants))
         if len(reco_beamRemnants)>=2:
@@ -444,13 +462,15 @@ if __name__=='__main__':
         R_Wjets_multiplicity.Fill(len(W_jets))
         if len(W_jets)>=2:
             Wjets_4vec=W_jets[0].P4() + W_jets[1].P4()
-            R_Wjets_mass.Fill(Wjets_4vec.M())
+            R_Wjets_mass_pairs.Fill(Wjets_4vec.M())
+            R_dijet_mass.Fill(Wjets_4vec.M())
+            R_dijet_mass_10GeVbinning.Fill(Wjets_4vec.M())
             R_Wjets_cos_leading.Fill(W_jets[0].P4().CosTheta())
             R_Wjets_cos_sub.Fill(W_jets[1].P4().CosTheta())
             R_Wjets_p_leading.Fill(W_jets[0].P4().P())
             R_Wjets_p_sub.Fill(W_jets[1].P4().P())
-            R_Wjets_cos_pair.Fill(Wjets_4vec.P())
-            R_Wjets_p_pairs.Fill(Wjets_4vec.CosTheta())
+            R_Wjets_cos_pair.Fill(Wjets_4vec.CosTheta())
+            R_Wjets_p_pairs.Fill(Wjets_4vec.P())
         if len(W_jets)==1:
             R_Wjets_cos_leading.Fill(W_jets[0].P4().CosTheta())
             R_Wjets_p_leading.Fill(W_jets[0].P4().CosTheta())
@@ -458,8 +478,10 @@ if __name__=='__main__':
             R_Wjets_pT.Fill(W_jets[i].PT)
             R_Wjets_p.Fill(W_jets[i].P4().P())
             R_Wjets_eta.Fill(W_jets[i].Eta)
+            R_Wjets_mass.Fill(W_jets[i].P4().M())
 
         R_missingMass.Fill((P4_f-P4_i).M())
+        R_missingP.Fill((P4_f-P4_i).P())
 
         #-------------------------------------------------------------------------------------------------
         leptons=electrons+muons
@@ -591,4 +613,5 @@ if __name__=='__main__':
     print CutFlow.GetBinContent(3)
     print CutFlow.GetBinContent(4)
     print CutFlow.GetBinContent(5)
+    print CutFlow.GetBinContent(6)
     output.Write()
