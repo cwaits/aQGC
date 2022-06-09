@@ -62,6 +62,7 @@ TH1.SetDefaultSumw2()
 import math
 from array import array
 import time
+import pickle
 
 gSystem.Load("libDelphes")
 gStyle.SetOptStat(0)
@@ -295,6 +296,9 @@ if __name__=='__main__':
 
     #dijet histograms for fitting
     a=array('f', [0]+list(range(1000, 3001, 500))+[6000])
+    array_file=open('Variable_binning_array.pkl','wb')
+    pickle.dump(a, array_file)
+    array_file.close()
     R_dijet_mass = TH1F('R_dijet_mass','mass [GeV];Events', 6, a)
     R_dijet_mass_10GeVbinning = TH1F('R_dijet_mass_10GeVbinning', ';mass [GeV];Events', 600, 0, sqrtS)
 
@@ -413,8 +417,8 @@ if __name__=='__main__':
         if testing:
             ptCut=1000
             truthWs=[p for p in truthWs if abs(p.Eta)<2.5]
+           
             #fill CutFlow
-
             CutFlow.Fill(1)
             if len(truthWs)==2:
                 CutFlow.Fill(2)
