@@ -5,12 +5,12 @@ if [[ "$PWD" != "/raid01/users/cwaits/aQGC" ]];
 then
     exit
 fi
-# Example: ./setLimits.sh -i $PWD/path/to/INT_sample -q $PWD/path/to/QUAD_sample -s $PWD/path/to/SM_sample  -t $PWD/example/dir/  -h R_dijet_mass
+# Example: ./setLimits.sh -i $PWD/path/to/INT_sample -q $PWD/path/to/QUAD_sample -s $PWD/path/to/SM_sample  -t $PWD/example/dir/  -h R_dijet_mass -o T1
 # -g YES  -c cut_dictionary"
 # the tag is the directory that will hold the INT, QUAD, and background samples to be sent eft-fun
 # YES for gridscanner mode will not ask for user input, only use when running this script
 # through the separate gridscan scrpt
-while getopts i:q:s:t:g:h:c: flag; do
+while getopts i:q:s:t:g:h:c:o: flag; do
     echo "flag -$flag, Argument $OPTARG";
     case "$flag" in
         i) INT_path=$OPTARG;;
@@ -20,6 +20,7 @@ while getopts i:q:s:t:g:h:c: flag; do
         g) gridscannerMode=$OPTARG;;
         h) target_hist=$OPTARG;;
         c) cut_dict=$OPTARG;;
+        o) operator=$OPTARG;;
     esac
 done
 
@@ -66,9 +67,9 @@ else
     then
         mkdir "$tag"
     fi
-    python2.7 /raid01/users/cwaits/aQGC/analyzeDelphes.py $INT_path $INT_norm
-    python2.7 /raid01/users/cwaits/aQGC/analyzeDelphes.py $QUAD_path $QUAD_norm
-    python2.7 /raid01/users/cwaits/aQGC/analyzeDelphes.py $SM_path $SM_norm
+    #python2.7 /raid01/users/cwaits/aQGC/analyzeDelphes.py $INT_path $INT_norm
+    #python2.7 /raid01/users/cwaits/aQGC/analyzeDelphes.py $QUAD_path $QUAD_norm
+    #python2.7 /raid01/users/cwaits/aQGC/analyzeDelphes.py $SM_path $SM_norm
 fi
 
 # cp analyzeDelphes.py output to tag dir
@@ -97,10 +98,27 @@ python2.7 reBin.py "$SM_path" "$QUAD_path" "$target_hist"
 
 # edit eft-fun config and set limits
 cd ../eft-fun
+#set histopath in eft-fun config
 var1="histopath = "
 var2="$var1$tag"
 echo "$var2"
 sed -i "3 d" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
 sed -i "3 i $var2" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
-./bin/eftfun.py -m scan -a -p T1 -c all -i configs/mumu_vbs/mumu_vbs_mumu.cfg
+#set name of target histogram
+sed -i "9 d" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
+sed -i "9 i basename = $target_hist" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
+#set path to SM hists
+sed -i "17 d" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
+sed -i "17 i measured = \$(histopath)/$SM_name:\$(basename)" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
+sed -i "19 d" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
+sed -i "19 i sm = \$(histopath)/$SM_name:\$(basename)" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
+#set path to INT hist
+sed -i "49 d" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
+sed -i "49 i $operator $operator = \$(histopath)/$INT_name:\$(basename)" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
+#set path to QUAD hist
+sed -i "54 d" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
+sed -i "54 i $operator $operator = \$(histopath)/$QUAD_name:\$(basename)" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
+
+#run eft-fun
+./bin/eftfun.py -m scan -a -p "$operator" -c all -i configs/mumu_vbs/mumu_vbs_mumu.cfg
 cd ../aQGC 
