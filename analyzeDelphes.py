@@ -21,11 +21,25 @@ testing=True
 #normalization
 #use to scale histogram for limits settings
 #norm=[cross-section, luminosity, # of events]
-INT=[0.0961303843956, 1000000, 100000]
-QUAD=[1.30920764263, 1000000, 100000]
-SM=[2.09, 1000000, 100000]
+INT6_T1=[0.0961303843956, 1000000, 100000]
+QUAD6_T1=[1.30920764263, 1000000, 100000]
+SM6=[2.09, 1000000, 100000]
 
-processes={'INT':INT, 'QUAD':QUAD, 'SM':SM, 'None':False, 'False':False}
+INT10_T0=[ 1.04188805092, 1000000, 100000]
+QUAD10_T0=[ 186.99326448, 1000000, 100000]
+INT10_T1=[ 0.373949736706, 1000000, 100000]
+QUAD10_T1=[ 'placeholder', 1000000, 100000]
+INT10_T2=[ 0.446552786477, 1000000, 100000]
+QUAD10_T2=[ 16.3462335145, 1000000, 100000]
+INT10_T6=[ 0.73951283237, 1000000, 100000]
+QUAD10_T6=[ 150.574452024, 1000000, 100000]
+INT10_T7=[ 0.891624621914, 1000000, 100000]
+QUAD10_T7=[ 99.1337741295, 1000000, 100000]
+
+processes={'INT6_T1':INT6_T1, 'QUAD6_T1':QUAD6_T1, 'SM6':SM6, 
+'INT10_T0':INT10_T0, 'QUAD10_T0':QUAD10_T0, 'INT10_T1':INT10_T1, 'QUAD10_T1':QUAD10_T1, 'INT10_T2':INT10_T2, 'QUAD10_T2':QUAD10_T2, 'INT10_T6':INT10_T6, 'QUAD10_T6':QUAD10_T6,
+'INT10_T7':INT10_T7, 'QUAD10_T7':QUAD10_T7,
+'None':False, 'False':False}
 #---------------------------------------------------------
 jetType='VLCjetR10_inclusive'
 
@@ -164,6 +178,8 @@ if __name__=='__main__':
         sample=processes[str(argv[2])]
     else:
         sample=False
+    if len(argv)>3:
+        cut_file=open(str(argv[3]), 'rb')   
     #if len(argv)>3:
     #    tag=str(argv[3])
     #else:
@@ -305,7 +321,7 @@ if __name__=='__main__':
     CutFlow = TH1F('CutFlow', ';Cut;Events', 10, .5, 10.5)
    
     #misc histograms
-    T_WW_mass = TH1F('WW_mass', ';Mass [GeV];Events', 6, a) 
+    T_WW_mass = TH1F('WW_mass', ';Mass [GeV];Events', 20, 0, sqrtS) 
     
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     m=0
@@ -385,12 +401,11 @@ if __name__=='__main__':
             for i in range(len(jets)):
                 P4_f+=jets[i].P4()
             missingP=(P4_f-P4_i).P()
-            
-            #cuts
-            missingP_cut=float(argv[3])
-            muonEta_cut=float(argv[4])
-            muonP_cut=float(argv[5])
-            electronP_cut=float(argv[6])
+            missingP_cut=sqrtS
+            #cuts applied through a dictionary made from gridScan.py 
+            if len(argv)>3:
+                cut_dict=pickle.load(cut_file)
+                missingP_cut=cut_dict['missing_P']
 
             #fill CutFlow
             CutFlow.Fill(1)
@@ -415,7 +430,7 @@ if __name__=='__main__':
         #--------------------------------------
         #testing channel
         if testing:
-            ptCut=1000
+            ptCut=800
             truthWs=[p for p in truthWs if abs(p.Eta)<2.5]
            
             #fill CutFlow
