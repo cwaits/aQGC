@@ -67,9 +67,16 @@ else
     then
         mkdir "$tag"
     fi
-    #python2.7 /raid01/users/cwaits/aQGC/analyzeDelphes.py $INT_path $INT_norm
+
+    touch log_INT
+    #python2.7 /raid01/users/cwaits/aQGC/analyzeDelphes.py $INT_path $INT_norm > log_INT
+    mv log_INT "$tag"
+    touch log_QUAD
     #python2.7 /raid01/users/cwaits/aQGC/analyzeDelphes.py $QUAD_path $QUAD_norm
+    mv log_QUAD "$tag"
+    touch touch_SM
     #python2.7 /raid01/users/cwaits/aQGC/analyzeDelphes.py $SM_path $SM_norm
+    mv log_SM "$tag"
 fi
 
 # cp analyzeDelphes.py output to tag dir
@@ -99,11 +106,8 @@ python2.7 reBin.py "$SM_path" "$QUAD_path" "$target_hist"
 # edit eft-fun config and set limits
 cd ../eft-fun
 #set histopath in eft-fun config
-var1="histopath = "
-var2="$var1$tag"
-echo "$var2"
 sed -i "3 d" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
-sed -i "3 i $var2" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
+sed -i "3 i histopath = $tag" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
 #set name of target histogram
 sed -i "9 d" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
 sed -i "9 i basename = $target_hist" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
@@ -120,5 +124,8 @@ sed -i "54 d" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
 sed -i "54 i $operator $operator = \$(histopath)/$QUAD_name:\$(basename)" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
 
 #run eft-fun
-./bin/eftfun.py -m scan -a -p "$operator" -c all -i configs/mumu_vbs/mumu_vbs_mumu.cfg
+touch log_limits
+./bin/eftfun.py -m scan -a -p "$operator" -c all -i configs/mumu_vbs/mumu_vbs_mumu.cfg > log_limits
+cat log_limits
+mv log_limits "$tag"
 cd ../aQGC 
