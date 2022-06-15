@@ -76,7 +76,7 @@ TH1.SetDefaultSumw2()
 import math
 from array import array
 import time
-import pickle
+from cut_combo import cut_dict
 
 gSystem.Load("libDelphes")
 gStyle.SetOptStat(0)
@@ -179,7 +179,9 @@ if __name__=='__main__':
     else:
         sample=False
     if len(argv)>3:
-        cut_file=open(str(argv[3]), 'rb')   
+        gridScan = True
+    else:
+        gridScan =False
     #if len(argv)>3:
     #    tag=str(argv[3])
     #else:
@@ -402,11 +404,11 @@ if __name__=='__main__':
                 P4_f+=jets[i].P4()
             missingP=(P4_f-P4_i).P()
             missingP_cut=sqrtS
-            #cuts applied through a dictionary made from gridScan.py 
-            if len(argv)>3:
-                cut_dict=pickle.load(cut_file)
-                missingP_cut=cut_dict['missing_P']
-
+            #cuts applied through a dictionary made from gridScan.py and imported from cut_combo.py
+            if gridScan:
+                muons = [p for p in muons if abs(p.Eta)<=cut_Dict['mu_eta']]
+                muons = [p for p in muons if p.P4().P()<=cut_dict['mu_P']]
+                electrons = [p for p in electrons if p.P4().P()>=cut_dict['e_P']]
             #fill CutFlow
             CutFlow.Fill(1)
             if len(muons)>=1:
@@ -424,6 +426,8 @@ if __name__=='__main__':
             if len(electrons)!=1:
                 continue
             if len(W_jets)!=1:
+                continue
+            if missingP > missingP_cut:
                 continue
 
             #fill channel-specific histograms
