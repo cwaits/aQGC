@@ -1,6 +1,6 @@
 import model mymodel
 
-generate    mu+ mu- > mu+ mu- W+ W- M0=0 M1=0 M2=0 M3=0 M4=0 M5=0 M7=0 T0=0 T1=0 T2=0 T5=0 T6=0 T7^2>0 T8=0 T9=0 S0=0 S1=0 S2=0
+generate    mu+ mu- > mu+ mu- W+ W- M0=0 M1=0 M2=0 M3=0 M4=0 M5=0 M7=0 T0=0 T1=0 T2=0 T5=0 T6=0 T7^2==2 T8=0 T9=0 S0=0 S1=0 S2=0
 
 output mumumumuww_QUAD_10TeV_T7
 
