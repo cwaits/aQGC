@@ -1,16 +1,15 @@
 #!/bin/bash -x
 # run in aQGC dir
 # sample naming convention to automatically pick correct normalization in analyzeDelphes.py: INT6_T1.root with 6 the CoM energy and T1 the aQGC operator
-if [[ "$PWD" != "/raid01/users/cwaits/aQGC" ]];
+if [[ "$PWD" != "/raid07/users/cwaits/cwaits/aQGC" ]];
 then
     exit
 fi
-# Example: ./setLimits.sh -i $PWD/path/to/INT_sample -q $PWD/path/to/QUAD_sample -s $PWD/path/to/SM_sample  -t $PWD/example/dir/  -h R_dijet_mass -o T1
-# -g YES  -c cut_dictionary"
+# Example: "./setLimits.sh -i $PWD/path/to/INT_sample -q $PWD/path/to/QUAD_sample -s $PWD/path/to/SM_sample  -t $PWD/example/dir/  -h R_dijet_mass -o T1 -g NO :
 # the tag is the directory that will hold the INT, QUAD, and background samples to be sent eft-fun
 # YES for gridscanner mode will not ask for user input, only use when running this script
 # through the separate gridscan scrpt
-while getopts i:q:s:t:g:h:c:o: flag; do
+while getopts i:q:s:t:g:h:o: flag; do
     echo "flag -$flag, Argument $OPTARG";
     case "$flag" in
         i) INT_path=$OPTARG;;
@@ -19,7 +18,6 @@ while getopts i:q:s:t:g:h:c:o: flag; do
         t) tag=$OPTARG;;
         g) gridscannerMode=$OPTARG;;
         h) target_hist=$OPTARG;;
-        c) cut_dict=$OPTARG;;
         o) operator=$OPTARG;;
     esac
 done
@@ -42,10 +40,16 @@ then
     else
         mkdir "$tag"
     fi
-    #run with cut dictionary when in gridscanner mode
-    #python2.7 /raid01/users/cwaits/aQGC/analyzeDelphes.py $INT_path $INT_norm $cut_dict
-    #python2.7 /raid01/users/cwaits/aQGC/analyzeDelphes.py $QUAD_path $QUAD_norm $cut_dict
-    #python2.7 /raid01/users/cwaits/aQGC/analyzeDelphes.py $SM_path $SM_norm $cut_dict
+    #run analysis script over input samples to make histograms
+    touch log_INT
+    python2.7 /raid07/users/cwaits/cwaits/aQGC/analyzeDelphes.py $INT_path $INT_norm "gridScan" > log_INT
+    mv log_INT "$tag"
+    touch log_QUAD
+    python2.7 /raid07/users/cwaits/cwaits/aQGC/analyzeDelphes.py $QUAD_path $QUAD_norm "gridScan" > log_QUAD
+    mv log_QUAD "$tag"
+    touch log_SM
+    python2.7 /raid07/users/cwaits/cwaits/aQGC/analyzeDelphes.py $SM_path $SM_norm "gridScan" > log_SM
+    mv log_SM "$tag"
 else
     #remove contents of output directory before moving histogram files
     if [[ -d "$tag" ]];
@@ -53,7 +57,6 @@ else
         echo "$tag"
         echo "Remove contents of above directory?"
         read -p "Enter YES or NO: " uservar
-    fi
 
     if [[ "$uservar" == "YES" ]];
     then
@@ -62,6 +65,7 @@ else
     else
         exit
     fi
+    fi
     #make output directory if it does not exist
     if [[ ! -d "$tag" ]];
     then
@@ -69,13 +73,13 @@ else
     fi
 
     touch log_INT
-    #python2.7 /raid01/users/cwaits/aQGC/analyzeDelphes.py $INT_path $INT_norm > log_INT
+    python2.7 /raid07/users/cwaits/cwaits/aQGC/analyzeDelphes.py $INT_path $INT_norm > log_INT
     mv log_INT "$tag"
     touch log_QUAD
-    #python2.7 /raid01/users/cwaits/aQGC/analyzeDelphes.py $QUAD_path $QUAD_norm
+    python2.7 /raid07/users/cwaits/cwaits/aQGC/analyzeDelphes.py $QUAD_path $QUAD_norm > log_QUAD
     mv log_QUAD "$tag"
-    touch touch_SM
-    #python2.7 /raid01/users/cwaits/aQGC/analyzeDelphes.py $SM_path $SM_norm
+    touch log_SM
+    python2.7 /raid07/users/cwaits/cwaits/aQGC/analyzeDelphes.py $SM_path $SM_norm > log_SM
     mv log_SM "$tag"
 fi
 
@@ -92,7 +96,7 @@ cp "$INT_path" "$tag"
 cp "$QUAD_path" "$tag"
 cp "$SM_path" "$tag"
 
-INT_path= "$tag"/"$INT_name"
+INT_path="$tag"/"$INT_name"
 QUAD_path="$tag"/"$QUAD_name"
 SM_path="$tag"/"$SM_name"
 
@@ -118,7 +122,7 @@ sed -i "19 d" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
 sed -i "19 i sm = \$(histopath)/$SM_name:\$(basename)" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
 #set path to INT hist
 sed -i "49 d" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
-sed -i "49 i $operator $operator = \$(histopath)/$INT_name:\$(basename)" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
+sed -i "49 i $operator = \$(histopath)/$INT_name:\$(basename)" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
 #set path to QUAD hist
 sed -i "54 d" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg
 sed -i "54 i $operator $operator = \$(histopath)/$QUAD_name:\$(basename)" configs/mumu_vbs/mumu_vbs_mumu_mjj.cfg

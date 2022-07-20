@@ -1,0 +1,49 @@
+import model mymodel
+
+generate    mu+ mu- > mu+ mu- W+ W- M0=0 M1=0 M2=0 M3=0 M4=0 M5=0 M7^2>0 T0=0 T1=0 T2=0 T5=0 T6=0 T7=0 T8=0 T9=0 S0=0 S1=0 S2=0
+
+output mumumumuww_QUAD_3TeV_M7
+
+launch mumumumuww_QUAD_3TeV_M7
+0
+set FS0 1.000000e-20
+set FS1 1.000000e-20
+set FS2 1.000000e-20
+set FM0 1.000000e-20
+set FM1 1.000000e-20
+set FM2 1.000000e-20
+set FM3 1.000000e-20
+set FM4 1.000000e-20
+set FM5 1.000000e-20
+set FM6 1.000000e-20
+set FM7 1.000000e-12
+set FT0 1.000000e-20
+set FT1 1.000000e-20
+set FT2 1.000000e-20
+set FT3 1.000000e-20
+set FT4 1.000000e-20
+set FT5 1.000000e-20
+set FT6 1.000000e-20
+set FT7 1.000000e-20
+set FT8 1.000000e-20
+set FT9 1.000000e-20
+set nevents 10000
+set bwcutoff 15.0
+set ptb 20.0
+set ptl 0.1
+set etab 5.0
+set drbb 0.4
+set drbj 0.4
+set drll 0.1
+#set mmll 5.0
+#set mmnl 5.0
+#set ptllmin 5.0
+set etal 15.0
+set maxjetflavor 5
+set dynamical_scale_choice 3
+set ebeam1 1500
+set ebeam2 1500
+set iseed 1370
+0
+
+

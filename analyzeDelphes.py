@@ -5,8 +5,8 @@ DEBUG=False
 
 #two muon, fully hadronic decay channel
 #requires exactly 2 muons, a dimuon mass > 106 GeV, and exactly 2 Wjets (50<j_M<100)
-#hadronicDimuonChannel=True
-hadronicDimuonChannel=False
+hadronicDimuonChannel=True
+#hadronicDimuonChannel=False
 
 #semi-leptonic decay channel
 #requires one or more muons, exactly one electron, exactly one Wjet
@@ -14,31 +14,47 @@ hadronicDimuonChannel=False
 semileptonicChannel=False
 
 #testing channel
-testing=True
-#testing=False
+#testing=True
+testing=False
 
 #---------------------------------------------------------
 #normalization
 #use to scale histogram for limits settings
 #norm=[cross-section, luminosity, # of events]
+
+#backgrounds
+SM6=[2.09, 1000000, 100000]
+ZZ6=[0.0080156, 1000000, 100000]
+Quadboson6=[0.002399273966, 1000000, 100000]
+Diboson6=[0.00181387522, 1000000, 100000]
+
+SM10=[2.97534340446, 10000000, 100000]
+ZZ10=[0.0032819, 10000000, 100000]
+Quadboson10=[0.001880485374, 10000000, 100000]
+Diboson10=[0.0019859432681, 10000000, 100000]
+
+#6 TeV signal
 INT6_T1=[0.0961303843956, 1000000, 100000]
 QUAD6_T1=[1.30920764263, 1000000, 100000]
-SM6=[2.09, 1000000, 100000]
+INT6_T2=[0.118476607978, 1000000, 100000]
+QUAD6_T2=[0.76393138231, 1000000, 100000]
 
-INT10_T0=[ 1.04188805092, 1000000, 100000]
-QUAD10_T0=[ 186.99326448, 1000000, 100000]
-INT10_T1=[ 0.373949736706, 1000000, 100000]
-QUAD10_T1=[ 'placeholder', 1000000, 100000]
-INT10_T2=[ 0.446552786477, 1000000, 100000]
-QUAD10_T2=[ 16.3462335145, 1000000, 100000]
-INT10_T6=[ 0.73951283237, 1000000, 100000]
-QUAD10_T6=[ 150.574452024, 1000000, 100000]
-INT10_T7=[ 0.891624621914, 1000000, 100000]
-QUAD10_T7=[ 99.1337741295, 1000000, 100000]
+#10 TeV signal
+INT10_T0=[ 1.04188805092, 10000000, 100000]
+QUAD10_T0=[ 186.99326448, 10000000, 100000]
+INT10_T1=[ 0.373949736706, 10000000, 100000]
+QUAD10_T1=[ 29.7886385348, 10000000, 100000]
+INT10_T2=[ 0.446552786477, 10000000, 100000]
+QUAD10_T2=[ 16.3462335145, 10000000, 100000]
+INT10_T6=[ 0.73951283237, 10000000, 100000]
+QUAD10_T6=[ 150.574452024, 10000000, 100000]
+INT10_T7=[ 0.891624621914, 10000000, 100000]
+QUAD10_T7=[ 99.1337741295, 10000000, 100000]
 
-processes={'INT6_T1':INT6_T1, 'QUAD6_T1':QUAD6_T1, 'SM6':SM6, 
-'INT10_T0':INT10_T0, 'QUAD10_T0':QUAD10_T0, 'INT10_T1':INT10_T1, 'QUAD10_T1':QUAD10_T1, 'INT10_T2':INT10_T2, 'QUAD10_T2':QUAD10_T2, 'INT10_T6':INT10_T6, 'QUAD10_T6':QUAD10_T6,
-'INT10_T7':INT10_T7, 'QUAD10_T7':QUAD10_T7,
+processes={'SM6':SM6, 'ZZ6':ZZ6, 'Quadboson6':Quadboson6, 'Diboson6':Diboson6, 'SM10':SM10, 'ZZ10':ZZ10, 'Quadboson10':Quadboson10, 'Diboson10':Diboson10, 
+'INT6_T1':INT6_T1, 'QUAD6_T1':QUAD6_T1, 'INT6_T2':INT6_T2, 'QUAD6_T2':QUAD6_T2, 
+'INT10_T0':INT10_T0, 'QUAD10_T0':QUAD10_T0, 'INT10_T1':INT10_T1, 'QUAD10_T1':QUAD10_T1, 'INT10_T2':INT10_T2, 'QUAD10_T2':QUAD10_T2, 'INT10_T6':INT10_T6, 
+'QUAD10_T6':QUAD10_T6, 'INT10_T7':INT10_T7, 'QUAD10_T7':QUAD10_T7,
 'None':False, 'False':False}
 #---------------------------------------------------------
 jetType='VLCjetR10_inclusive'
@@ -179,9 +195,13 @@ if __name__=='__main__':
     else:
         sample=False
     if len(argv)>3:
-        gridScan = True
+        if str(argv[3]) == gridScan:
+            gridScan = True
+        else:
+            gridScan = False
     else:
         gridScan =False
+    print "gridScan = ",gridScan
     #if len(argv)>3:
     #    tag=str(argv[3])
     #else:
@@ -313,18 +333,15 @@ if __name__=='__main__':
     R_W_multiplicity = TH1F('R_W_mulitplicity', ';Multiplicity;Events', 7, -.5, 6.5)
 
     #dijet histograms for fitting
-    a=array('f', [0]+list(range(1000, 3001, 500))+[6000])
-    array_file=open('Variable_binning_array.pkl','wb')
-    pickle.dump(a, array_file)
-    array_file.close()
-    R_dijet_mass = TH1F('R_dijet_mass','mass [GeV];Events', 6, a)
+    #a=array('f', [0]+list(range(1000, 3001, 500))+[6000])
+    R_dijet_mass = TH1F('R_dijet_mass','mass [GeV];Events', 10, 0, sqrtS)
     R_dijet_mass_10GeVbinning = TH1F('R_dijet_mass_10GeVbinning', ';mass [GeV];Events', 600, 0, sqrtS)
 
     CutFlow = TH1F('CutFlow', ';Cut;Events', 10, .5, 10.5)
    
     #misc histograms
     T_WW_mass = TH1F('WW_mass', ';Mass [GeV];Events', 20, 0, sqrtS) 
-    
+    Test_hist = TH1F('Test_hist', ';Mass;Events', 1, 0, 1) 
     #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     m=0
     countA=0
@@ -361,6 +378,12 @@ if __name__=='__main__':
         #--------------------------------------
         #hadronic dimuon channel event selection
         if hadronicDimuonChannel:
+            #cuts applied through a dictionary made from gridScan.py and imported from cut_combo.py
+            if gridScan:
+                 muons = [p for p in muons if p.P4().P()<=cut_dict['mu_P']]
+                 muons = [p for p in muons if abs(p.Eta)<=cut_dict['mu_eta']]
+                 W_jets = [p for p in W_jets if p.P4().P()>=cut_dict['jet_P']]
+                 W_jets = [p for p in W_jets if abs(p.Eta)<=cut_dict['jet_eta']]
             #fill CutFlow 
             CutFlow.Fill(1)
             if len(muons)==2:
@@ -406,9 +429,10 @@ if __name__=='__main__':
             missingP_cut=sqrtS
             #cuts applied through a dictionary made from gridScan.py and imported from cut_combo.py
             if gridScan:
-                muons = [p for p in muons if abs(p.Eta)<=cut_Dict['mu_eta']]
+                muons = [p for p in muons if abs(p.Eta)<=cut_dict['mu_eta']]
                 muons = [p for p in muons if p.P4().P()<=cut_dict['mu_P']]
                 electrons = [p for p in electrons if p.P4().P()>=cut_dict['e_P']]
+                missingP_cut = cut_dict['missing_P']
             #fill CutFlow
             CutFlow.Fill(1)
             if len(muons)>=1:
@@ -431,6 +455,9 @@ if __name__=='__main__':
                 continue
 
             #fill channel-specific histograms
+            #calling the electron and W-jet 4 vector the "dijet"
+            dijet = electrons[0].P4() + W_jets[0].P4()
+            R_dijet_mass.Fill(dijet.M())
         #--------------------------------------
         #testing channel
         if testing:
@@ -598,17 +625,20 @@ if __name__=='__main__':
         #-------------------------------------------------------------------------------------------------
     #normalize target hist by cross-section*lumi/#ofEvents
     norm=1
-    print "unscaled: " ,T_WW_mass.Integral()
+    print "unscaled: " ,R_dijet_mass.Integral()
     if sample != False:
         norm=sample[0]*sample[1]/sample[2]
+    #only need to scale one hist per channel, but will scale them all here for simplicity
+    R_dijet_mass.Scale(norm)
     T_WW_mass.Scale(norm)
-    print "scaled: ", T_WW_mass.Integral()
+    print "scaled: ", R_dijet_mass.Integral()
     print 'Number of events:', CutFlow.GetBinContent(1)
     print 'Number of events passing cut 1:', CutFlow.GetBinContent(2)
     print 'Number of events passing cut 2:', CutFlow.GetBinContent(3)
     print 'Number of events passing cut 3:', CutFlow.GetBinContent(4)
     print 'Number of events passing cut 4:', CutFlow.GetBinContent(5)
     print 'Number of events passing cut 5:', CutFlow.GetBinContent(6)
+    Test_hist.SetBinContent(1, 10)
     output.Write()
     print("Execution time:",time.time()-start)
 
